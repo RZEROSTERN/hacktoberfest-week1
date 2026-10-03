@@ -13,7 +13,8 @@ _TODO: Describe how to use this project._
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.
+By participating, you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-_TODO: Choose a license._
+Dual-licensed under MIT or Beerware, at your option. See [LICENSE.md](LICENSE.md).
