@@ -114,7 +114,7 @@ and point out this code of conduct. Assume good faith; it is more likely that
 participants are unaware of their bad behaviour than that they intentionally try
 to degrade the quality of the discussion. Should there be difficulties in
 dealing with the situation, you may report your concerns to the project
-maintainers at **[INSERT CONTACT EMAIL]**. Serious or persistent offenders may
+maintainers at [contact@dev1.mx](mailto:contact@dev1.mx). Serious or persistent offenders may
 be temporarily or permanently banned from communicating through the project's
 spaces.
 
