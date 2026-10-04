@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "gemma4:e4b"
     ollama_timeout_seconds: float = 120.0
+    # Bearer token for a remote Ollama behind an authenticating proxy. Empty = no header.
+    ollama_api_key: SecretStr = SecretStr("")
 
     # Speech-to-text (faster-whisper). Models download into whisper_model_dir on first use.
     whisper_model: str = "small"

@@ -4,6 +4,7 @@ from typing import Any
 
 import httpx
 import pytest
+from pydantic import SecretStr
 
 from app.config import Settings
 from app.llm import OllamaClient
@@ -72,3 +73,18 @@ async def test_model_failure_never_raises(failure: Exception) -> None:
 
     result = await client_with(handler).analyze_document(b"img")
     assert result.confidence == "low"
+
+
+async def test_bearer_token_is_sent_only_when_configured() -> None:
+    seen: list[str | None] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request.headers.get("authorization"))
+        return chat_reply(TELMEX.model_dump_json())
+
+    transport = httpx.MockTransport(handler)
+    await OllamaClient(Settings(), transport=transport).analyze_document(b"img")
+    with_key = Settings(ollama_api_key=SecretStr("s3cret"))
+    await OllamaClient(with_key, transport=transport).analyze_document(b"img")
+
+    assert seen == [None, "Bearer s3cret"]
