@@ -30,6 +30,7 @@ def analyze(client: httpx.Client, image: Path) -> tuple[str, float]:
     payload = {
         "model": settings.ollama_model,
         "stream": False,
+        "think": False,
         "format": schema,
         "options": {"temperature": 0},
         "messages": [
