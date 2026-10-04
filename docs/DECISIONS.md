@@ -107,3 +107,31 @@ Decisions:
   folding included) instead of adding an `icalendar` dependency: one all-day event on the due
   date with two display alarms, 3 days and 1 day before. It returns 404 when the document has
   no deadline, so the web app only shows "Agregar a mi calendario" when there is one.
+
+## 2026-10-04: Web photo flow
+
+- **Nuxt server as a thin proxy (BFF)**: the browser only talks to `/api/*` on the Nuxt
+  server. `server/api/documents/**` forwards to FastAPI with `proxyRequest` and adds the
+  `X-Access-Code` header from server-only `runtimeConfig`, so the API URL and code never
+  reach the browser and there is no CORS to configure.
+- **Family access code**: `/acceso` posts the code to `/api/login`, which sets an `httpOnly`,
+  `SameSite=Lax`, 1-year cookie (`Secure` outside dev). A Nitro server middleware redirects
+  pages to `/acceso` and returns 401 for `/api/*` without a valid cookie (constant-time
+  comparison; an empty configured code rejects everyone). The submit button stays disabled
+  until hydration so an early tap can't fall back to a native form submit.
+- **Camera capture**: a hidden `<input type="file" accept="image/*" capture="environment">`
+  opened by the big "Tomar foto" button. No `getUserMedia` viewfinder: the native camera UI
+  is familiar, works on iOS and Android, and needs no permission prompt.
+- **Resize in the browser**: photos are downscaled to at most 1600 px and re-encoded as JPEG
+  (quality 0.85) with `createImageBitmap` + canvas before upload. Phone photos are 3–8 MB;
+  this makes upload and inference faster and normalizes HEIC/orientation. If resizing
+  fails, the original file is sent and the API validates it.
+- **Navigation**: saved results go to `/documentos/{id}` (shareable, reload-safe, SSR with
+  the cookie forwarded by `useRequestFetch`); unsaved low-confidence results go to
+  `/resultado` from in-memory state.
+- **Accessibility baseline**: 20 px root font, 72 px buttons, AA+ contrast, `role="status"`
+  loading and `role="alert"` errors, fraud warning first and in red, no-advice disclaimer on
+  every result.
+- Verified end to end with headless Chrome at 390×844: access gate, wrong/right code,
+  "Tomar foto" → Telmex sample → result in 26.8 s with the correct amount and no invented
+  deadline, reload works, no page errors.

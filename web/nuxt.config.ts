@@ -4,11 +4,15 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/eslint'],
   typescript: { strict: true },
+  css: ['~/assets/main.css'],
   app: {
     head: {
       htmlAttrs: { lang: 'es-MX' },
       title: 'Traductor de Papeles',
-      meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }]
+      meta: [
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'theme-color', content: '#0b4f9c' }
+      ]
     }
   },
   // Overridden at runtime by NUXT_* env vars. Server-only keys never reach the browser.
