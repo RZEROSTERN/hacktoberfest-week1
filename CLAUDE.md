@@ -55,3 +55,7 @@ is Gemma 4 via Ollama only. Built for the DEV Hacktoberfest Weekend Challenge 20
 - `npm ci` fails on Linux with a macOS-generated lockfile (missing `@emnapi/*`); CI and the
   web Dockerfile use `npm install`.
 - Docker on macOS can't use the GPU: run Ollama natively on Macs.
+- Gemma 4 thinks by default in Ollama: send `"think": false` (2x faster) and keep the
+  explicit deadline rules in the prompt, or it mistakes issue dates for deadlines.
+- PyAV is pinned `<17`: faster-whisper 1.2.1 breaks on newer PyAV (`metadata_errors`).
+- Automated Chrome on macOS hangs on `getUserMedia`; e2e tests stub the mic with Web Audio.

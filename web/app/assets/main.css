@@ -121,3 +121,12 @@ p { margin: 0 0 8px; }
 .doc-due { color: var(--primary); font-weight: 700; font-size: 1.15rem; }
 .doc-flag { color: var(--danger); font-weight: 700; }
 .doc-meta { color: var(--muted); font-size: 0.9rem; }
+
+.recording-dot {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--danger);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse { 50% { transform: scale(0.8); opacity: 0.6; } }
+@media (prefers-reduced-motion: reduce) { .recording-dot { animation: none; } }
+.big-button.stop { background: var(--danger); border-color: var(--danger); color: #fff; }

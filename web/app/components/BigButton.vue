@@ -1,8 +1,9 @@
 <script setup lang="ts">
-withDefaults(defineProps<{ icon?: string, variant?: 'primary' | 'secondary', to?: string }>(), {
+withDefaults(defineProps<{ icon?: string, variant?: 'primary' | 'secondary', to?: string, disabled?: boolean }>(), {
   icon: undefined,
   variant: 'primary',
-  to: undefined
+  to: undefined,
+  disabled: false
 })
 defineEmits<{ click: [] }>()
 </script>
@@ -26,6 +27,7 @@ defineEmits<{ click: [] }>()
     type="button"
     class="big-button"
     :class="variant"
+    :disabled="disabled"
     @click="$emit('click')"
   >
     <span

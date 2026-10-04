@@ -12,3 +12,11 @@ export interface DocumentResult {
   confidence: 'high' | 'medium' | 'low'
   explanation: string
 }
+
+// Mirrors api/app/schemas.py VoiceAnswerRead.
+export interface VoiceAnswer {
+  question: string
+  answer: string
+  confidence: 'high' | 'medium' | 'low'
+  document_id: number | null
+}

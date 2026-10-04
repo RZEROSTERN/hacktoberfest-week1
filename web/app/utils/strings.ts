@@ -64,7 +64,23 @@ export const t = {
   },
 
   voice: {
-    comingSoon: 'Muy pronto podrá preguntarme con su voz.'
+    title: 'Pregúnteme con su voz',
+    aboutDocument: 'Su pregunta es sobre este papel:',
+    hint: 'Toque el botón, haga su pregunta y luego toque "Ya terminé".',
+    start: 'Empezar a hablar',
+    stop: 'Ya terminé',
+    recording: 'Le estoy escuchando…',
+    listening: 'Estoy pensando su respuesta…',
+    listeningHint: 'Esto puede tardar hasta un minuto.',
+    youAsked: 'Usted preguntó',
+    answer: 'Mi respuesta',
+    askAgain: 'Hacer otra pregunta',
+    askAboutThis: 'Preguntar sobre este papel',
+    errorTitle: 'No pude escucharle',
+    errorPermission: 'Necesito permiso para usar el micrófono. Toque "Permitir" cuando el teléfono le pregunte.',
+    errorUnsupported: 'Este teléfono no me deja grabar. Pídale ayuda a su hijo.',
+    errorAudio: 'No pude oír la grabación. Intente de nuevo.',
+    seconds: (s: number) => `${s} s`
   },
 
   common: {

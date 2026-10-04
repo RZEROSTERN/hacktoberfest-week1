@@ -26,6 +26,13 @@ const { data: result, status, error } = await useAsyncData(`document-${id}`, () 
     />
     <div class="actions">
       <BigButton
+        v-if="result?.id"
+        icon="🎤"
+        :to="`/preguntar?documento=${result.id}`"
+      >
+        {{ t.voice.askAboutThis }}
+      </BigButton>
+      <BigButton
         variant="secondary"
         to="/"
       >
