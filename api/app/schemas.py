@@ -43,3 +43,19 @@ class DocumentRead(DocumentAnalysis):
 
     id: int | None
     created_at: datetime | None
+
+
+class VoiceAnswer(BaseModel):
+    """Structured answer the model must return for a spoken question."""
+
+    answer: str = Field(
+        description="Warm, plain Mexican Spanish answer in 1-4 short sentences, no jargon."
+    )
+    confidence: Confidence = Field(
+        description="'low' if the question is unclear or the answer is not in the document."
+    )
+
+
+class VoiceAnswerRead(VoiceAnswer):
+    question: str
+    document_id: int | None
