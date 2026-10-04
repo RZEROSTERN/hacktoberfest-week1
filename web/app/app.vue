@@ -4,6 +4,7 @@ import { t } from '~/utils/strings'
 
 <template>
   <div class="app">
+    <NuxtPwaManifest />
     <header class="app-header">
       <NuxtLink
         to="/"

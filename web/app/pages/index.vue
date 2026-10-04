@@ -86,6 +86,13 @@ async function onPhoto(event: Event) {
         >
           {{ t.home.askVoice }}
         </BigButton>
+        <BigButton
+          icon="🗂️"
+          variant="secondary"
+          to="/documentos"
+        >
+          {{ t.home.history }}
+        </BigButton>
       </div>
     </template>
   </div>

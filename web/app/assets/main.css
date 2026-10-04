@@ -108,3 +108,16 @@ p { margin: 0 0 8px; }
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap;
 }
+
+.history-section { display: flex; flex-direction: column; gap: 12px; }
+.doc-card {
+  display: flex; flex-direction: column; gap: 4px;
+  min-height: 72px; padding: 16px;
+  background: var(--card); border: 2px solid var(--border); border-radius: 16px;
+  color: var(--text); text-decoration: none;
+}
+.doc-card.danger { border-color: var(--danger); }
+.doc-type { font-size: 1.15rem; }
+.doc-due { color: var(--primary); font-weight: 700; font-size: 1.15rem; }
+.doc-flag { color: var(--danger); font-weight: 700; }
+.doc-meta { color: var(--muted); font-size: 0.9rem; }
