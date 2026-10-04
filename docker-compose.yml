@@ -1,0 +1,43 @@
+# Local development stack: Ollama + API + web.
+# On macOS, Docker cannot use the Apple GPU, so Ollama in a container is CPU-only and slow.
+# Mac users: run Ollama natively and set OLLAMA_BASE_URL=http://host.docker.internal:11434 in .env.
+# First run: docker compose exec ollama ollama pull gemma4:e4b
+
+services:
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+
+  api:
+    build: ./api
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      DATABASE_URL: sqlite:////data/paperwork.db
+    ports:
+      - "8000:8000"
+    volumes:
+      - api-data:/data
+    depends_on:
+      - ollama
+
+  web:
+    build: ./web
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      NUXT_API_BASE: http://api:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  ollama-models:
+  api-data:
