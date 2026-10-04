@@ -1,8 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, UploadFile
-from sqlmodel import Session
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
+from sqlmodel import Session, col, select
 
+from app.calendar import build_reminder
 from app.config import Settings, get_settings
 from app.db import get_session
 from app.llm import OllamaClient, get_llm
@@ -34,3 +35,35 @@ async def analyze_document(
     session.commit()
     session.refresh(document)
     return DocumentRead.model_validate(document, from_attributes=True)
+
+
+@router.get("")
+def list_documents(session: Annotated[Session, Depends(get_session)]) -> list[DocumentRead]:
+    documents = session.exec(select(Document).order_by(col(Document.created_at).desc())).all()
+    return [DocumentRead.model_validate(d, from_attributes=True) for d in documents]
+
+
+def _get_or_404(session: Session, document_id: int) -> Document:
+    document = session.get(Document, document_id)
+    if document is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese papel.")
+    return document
+
+
+@router.get("/{document_id}")
+def get_document(
+    document_id: int, session: Annotated[Session, Depends(get_session)]
+) -> DocumentRead:
+    return DocumentRead.model_validate(_get_or_404(session, document_id), from_attributes=True)
+
+
+@router.get("/{document_id}/reminder.ics")
+def get_reminder(document_id: int, session: Annotated[Session, Depends(get_session)]) -> Response:
+    document = _get_or_404(session, document_id)
+    if document.deadline is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Este papel no tiene fecha límite.")
+    return Response(
+        content=build_reminder(document),
+        media_type="text/calendar; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="recordatorio-{document.id}.ics"'},
+    )

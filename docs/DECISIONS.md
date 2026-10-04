@@ -97,3 +97,13 @@ Decisions:
   so the history never shows unreadable documents.
 - Async tests use `pytest-asyncio` in auto mode; the Ollama client accepts an injectable
   `httpx` transport so tests mock the model with `httpx.MockTransport`.
+
+## 2026-10-04: History and calendar reminder
+
+- `GET /documents` returns the whole history newest first. No pagination: one user and a few
+  documents a month. "Upcoming deadlines" are derived on the web side from the same list.
+- `GET /documents/{id}` backs the result and history detail screens.
+- `GET /documents/{id}/reminder.ics` is hand-written RFC 5545 (escaping and 75-octet line
+  folding included) instead of adding an `icalendar` dependency: one all-day event on the due
+  date with two display alarms, 3 days and 1 day before. It returns 404 when the document has
+  no deadline, so the web app only shows "Agregar a mi calendario" when there is one.
