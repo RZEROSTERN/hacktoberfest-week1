@@ -1,39 +1,32 @@
 # API
 
-FastAPI backend for the project, consumed by the frontend in `../web`.
+FastAPI backend for Paperwork Translator, consumed by the frontend in `../web`.
+Uses Gemma 4 through Ollama; no closed-model APIs at runtime.
 
 ## Setup
 
-Requires Python 3.10+.
+Requires [uv](https://docs.astral.sh/uv/) and a running Ollama with the model pulled
+(`ollama pull gemma4:e4b`). Copy `../.env.example` to `../.env` first.
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Development Server
 
 ```bash
-fastapi dev app/main.py
+uv run fastapi dev app/main.py
 ```
 
-The API runs on `http://localhost:8000`. Interactive docs are available at
-`http://localhost:8000/docs` (Swagger UI) and `http://localhost:8000/redoc`.
+Runs on `http://localhost:8000`; interactive docs at `/docs`.
 
-## Unit Tests
-
-Unit tests use [pytest](https://docs.pytest.org) and live in `tests/`:
+## Checks
 
 ```bash
-pip install -r requirements-dev.txt
-pytest
+uv run ruff check . && uv run ruff format --check .   # lint
+uv run mypy .                                         # typecheck
+uv run pytest                                         # unit tests (model mocked)
+uv run pytest -m integration                          # hits the real model with /samples
 ```
 
-They also run in CI via `.github/workflows/api-tests.yml`.
-
-## Production
-
-```bash
-fastapi run app/main.py
-```
+All checks except the integration tests also run in CI via `.github/workflows/api-tests.yml`.
