@@ -152,3 +152,37 @@ Decisions:
   no emoji artwork (licensing) and no image-processing dependency.
 - Verified on the production build: manifest linked, service worker active, history split
   correct, and the calendar button downloads an `.ics` with alarms 3 days and 1 day before.
+
+## 2026-10-04: Voice questions
+
+- **No native Gemma 4 audio through Ollama**: `ollama show gemma4:e4b` lists an `audio`
+  capability, but the `/api/chat` docs only document `images` for multimodal input and never
+  mention audio. Per the "don't rely on undocumented APIs" rule, voice uses the planned
+  fallback: speech-to-text with **faster-whisper** (MIT), then the text goes to Gemma 4.
+  Worth revisiting once Ollama documents audio input.
+- **Whisper `small`, CPU, int8**, Spanish forced (`language="es"`), VAD filter on. Transcribes
+  a short question in ~1–2 s on an M2 Pro. Weights (~460 MB) download on first use into
+  `api/.models/` (gitignored), not `~/.cache`.
+- **In memory only**: `transcribe()` accepts a `BinaryIO`, so the upload goes through
+  `io.BytesIO` and PyAV decodes it without touching disk. Transcripts are not logged or saved.
+- **PyAV pinned `<17`**: faster-whisper 1.2.1 calls `av.open(..., metadata_errors=...)`, which
+  newer PyAV (19.x) removed (`TypeError`). 16.1 works.
+- **Accepted formats**: whatever `MediaRecorder` produces: `audio/webm` and `audio/ogg`
+  (Chrome/Android) and `audio/mp4` (Safari/iOS), plus mpeg/wav. Codec parameters are
+  stripped before the check. Decoding failures return 422 with a friendly message; empty
+  transcripts return "No le escuché bien…" without calling the model.
+- **Context for questions about a document**: only the stored structured fields (type,
+  issuer, deadline, amount, actions, fraud flag/reason, explanation) go into the prompt.
+  The prompt is fully rendered before user text is inserted, so a transcript containing
+  `{schema}` can't alter it (a unit test caught the original re-templating bug).
+- **Recording UX**: one "Empezar a hablar" button, a pulsing red dot with a seconds counter,
+  one big "Ya terminé" button, auto-stop at 60 s. Each document page has "Preguntar sobre
+  este papel".
+- Test sample: `samples/question_telmex.m4a`, generated with macOS `say` and the natural
+  es-MX "Paulina" voice. Novelty voices ("Grandma", "Eddy", "Flo") transcribed badly, but
+  they're synthetic effects, not representative of real speech.
+- Verified end to end: Chrome MediaRecorder (webm/opus) → Nuxt proxy → Whisper → Gemma 4,
+  answered from the Telmex data in 8.9 s with the right amount and no invented date. The
+  headless browser's microphone was replaced with a Web Audio stream playing the sample,
+  because `getUserMedia` hangs for automated Chrome on macOS. Not yet tested on a real
+  phone (especially iOS Safari's `audio/mp4`).
