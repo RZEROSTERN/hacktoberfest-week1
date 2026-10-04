@@ -135,3 +135,20 @@ Decisions:
 - Verified end to end with headless Chrome at 390×844: access gate, wrong/right code,
   "Tomar foto" → Telmex sample → result in 26.8 s with the correct amount and no invented
   deadline, reload works, no page errors.
+
+## 2026-10-04: History screen and PWA
+
+- **History** (`/documentos`): "Próximas fechas" (deadlines today or later, soonest first,
+  with "Hoy / Mañana / En N días") above "Todos mis papeles" (newest first). Suspicious
+  documents get a red border and a "Posible fraude" badge. The split is a pure function
+  (`splitHistory`) so it is unit-tested without the API.
+- **PWA via `@vite-pwa/nuxt` 1.1.1** with `registerType: 'autoUpdate'`, a Spanish manifest
+  (`standalone`, portrait, theme `#0b4f9c`) and 192/512/maskable icons.
+- **Service worker caches static assets only** (`js, css, png, svg, ico`) and sets
+  `navigateFallback: null`: pages are server-rendered behind the access cookie, and
+  documents or API responses must never sit in a cache on the phone. The app needs a
+  connection anyway because the model runs on the server.
+- **Icons**: a hand-written SVG (document + check mark) rendered to PNG with headless Chrome;
+  no emoji artwork (licensing) and no image-processing dependency.
+- Verified on the production build: manifest linked, service worker active, history split
+  correct, and the calendar button downloads an `.ics` with alarms 3 days and 1 day before.
