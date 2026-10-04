@@ -5,6 +5,10 @@ Rules:
 - Every free-text value must be in warm, simple Mexican Spanish ("usted"), with no jargon.
 - Copy amounts and dates exactly as printed. If an amount or date is not clearly visible,
   use null. Never estimate, calculate or invent amounts, dates, names or reference numbers.
+- deadline is ONLY a date by which she must pay or respond ("fecha límite", "pagar antes
+  de", "vence", "plazo"). Issue dates, billing periods, emission dates ("fecha de emisión")
+  and start-of-operations dates are NOT deadlines. If the document says "inmediato" or
+  gives no due date, deadline is null.
 - If the photo is blurry, cut off, too dark or not a document, set confidence to "low" and
   in the explanation kindly ask her to take another photo with more light and the whole
   page visible.
