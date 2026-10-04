@@ -186,3 +186,31 @@ Decisions:
   headless browser's microphone was replaced with a Web Audio stream playing the sample,
   because `getUserMedia` hangs for automated Chrome on macOS. Not yet tested on a real
   phone (especially iOS Safari's `audio/mp4`).
+
+## 2026-10-04: Production deployment
+
+- **Render has no GPUs**: its docs never mention them and the biggest instances are CPU-only
+  (up to 12 CPU). Options considered: a smaller Gemma 4 on Render CPU, a DigitalOcean GPU
+  Droplet, or the developer's Mac behind a tunnel.
+- **Spike for the CPU option** (`gemma4:e2b`, Ollama forced to CPU with `num_gpu: 0` on a
+  12-core M2 Pro): reading quality was acceptable (right amount, no invented dates, no false
+  fraud flags), but processing one new photo took 379 s at full size, 127 s at 1024 px and
+  67 s at 768 px. Render's shared vCPUs would likely be slower, so 2–5 minutes per photo.
+  Rejected for UX.
+- **Chosen: DigitalOcean GPU Droplet** (NVIDIA RTX 4000 Ada, 20 GB VRAM, $0.76/h, billed per
+  second) running the already-validated `gemma4:e4b`. Render still hosts web + API from
+  `master` as planned.
+- **Demo window: 3 days** (Sun Oct 4 – Wed Oct 7, 2026), then the droplet is destroyed. That
+  bounds the cost (about $55) and is announced in the README.
+- **Securing a public Ollama**: Ollama has no auth. On the droplet it binds to 127.0.0.1 only;
+  Caddy terminates HTTPS (free hostname via sslip.io, Let's Encrypt certificate) and proxies
+  only requests carrying `Authorization: Bearer <OLLAMA_API_KEY>`, sending
+  `Host: localhost:11434` as the Ollama FAQ's proxy example does. The API sends the header
+  when `OLLAMA_API_KEY` is set.
+- **Render layout**: the API is a private service (`pserv`, `1c-2g` for Whisper) with a 2 GB
+  disk for SQLite and Whisper weights; only the web service (`0.5c-512mb`) is public. The web
+  service gets the API's private `host:port` via `fromService.property: hostport` (the proxy
+  adds `http://`) and copies `ACCESS_CODE` with `fromService.envVarKey`, so the code is
+  entered once. Region `virginia`, close to DigitalOcean's US-East GPU regions.
+- Not verified before merging: `render.yaml` against a live Render account, and
+  `setup.sh` on a real droplet (both need the owner's accounts).
