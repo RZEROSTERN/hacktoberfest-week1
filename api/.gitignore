@@ -1,0 +1,17 @@
+# Virtual environments
+.venv/
+venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Misc
+.DS_Store
+.idea
