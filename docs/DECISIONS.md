@@ -44,3 +44,10 @@ A running log of technical decisions and why they were made. Newest last.
 - GitHub Actions run lint, typecheck and unit tests per folder, only when that folder changes,
   on pushes to `master`/`develop` and on PRs. uv is installed with the pinned
   `astral-sh/setup-uv` action from the uv docs.
+
+## 2026-10-04: `npm install` instead of `npm ci` on Linux
+
+- A `package-lock.json` generated on macOS omits some platform-specific optional packages
+  (`@emnapi/*` WASM fallbacks), so `npm ci` on Linux fails with "Missing ... from lock file"
+  even after regenerating the lockfile. CI and the web Dockerfile use
+  `npm install --no-audit --no-fund`, which still honors the lockfile's pinned versions.
