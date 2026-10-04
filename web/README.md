@@ -38,6 +38,18 @@ yarn dev
 bun run dev
 ```
 
+## Unit Tests
+
+Unit tests use [Vitest](https://vitest.dev) with
+[`@nuxt/test-utils`](https://nuxt.com/docs/getting-started/testing) and live in
+`test/unit/`:
+
+```bash
+npm test
+```
+
+They also run in CI via `.github/workflows/web-tests.yml`.
+
 ## Production
 
 Build the application for production:
