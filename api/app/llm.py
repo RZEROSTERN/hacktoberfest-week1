@@ -68,11 +68,16 @@ class OllamaClient:
         self._settings = settings
         self._transport = transport
 
+    def _headers(self) -> dict[str, str]:
+        key = self._settings.ollama_api_key.get_secret_value()
+        return {"Authorization": f"Bearer {key}"} if key else {}
+
     async def _chat(self, payload: dict[str, object]) -> str:
         async with httpx.AsyncClient(
             base_url=self._settings.ollama_base_url,
             timeout=self._settings.ollama_timeout_seconds,
             transport=self._transport,
+            headers=self._headers(),
         ) as client:
             response = await client.post("/api/chat", json=payload)
             response.raise_for_status()
