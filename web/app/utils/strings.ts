@@ -49,6 +49,20 @@ export const t = {
     notFound: 'No encontré ese papel.'
   },
 
+  history: {
+    title: 'Mis papeles',
+    upcoming: 'Próximas fechas',
+    all: 'Todos mis papeles',
+    empty: 'Todavía no hay papeles. Tome una foto para empezar.',
+    noUpcoming: 'No tiene fechas límite próximas.',
+    due: 'Vence',
+    today: 'Hoy',
+    tomorrow: 'Mañana',
+    inDays: (days: number) => `En ${days} días`,
+    suspicious: 'Posible fraude',
+    scanned: 'Lo revisamos el'
+  },
+
   voice: {
     comingSoon: 'Muy pronto podrá preguntarme con su voz.'
   },
@@ -66,4 +80,16 @@ export function formatMoney(amount: number): string {
 export function formatDate(isoDate: string): string {
   // Dates are calendar days (YYYY-MM-DD); parse as local noon to avoid timezone shifts.
   return new Intl.DateTimeFormat('es-MX', { dateStyle: 'full' }).format(new Date(`${isoDate}T12:00:00`))
+}
+
+/** Whole days from today (local) until an ISO calendar date. */
+export function daysUntil(isoDate: string, today: Date = new Date()): number {
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const [y, m, d] = isoDate.split('-').map(Number) as [number, number, number]
+  return Math.round((new Date(y, m - 1, d).getTime() - start.getTime()) / 86_400_000)
+}
+
+export function formatShortDate(isoDate: string): string {
+  return new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+    .format(new Date(isoDate.length === 10 ? `${isoDate}T12:00:00` : isoDate))
 }
