@@ -51,3 +51,27 @@ A running log of technical decisions and why they were made. Newest last.
   (`@emnapi/*` WASM fallbacks), so `npm ci` on Linux fails with "Missing ... from lock file"
   even after regenerating the lockfile. CI and the web Dockerfile use
   `npm install --no-audit --no-fund`, which still honors the lockfile's pinned versions.
+
+## 2026-10-04: Model spike results (`gemma4:e4b`, prompt `analyze_v1`)
+
+Script: `api/scripts/spike_samples.py`. Request: Ollama `/api/chat` with the image as base64
+in `images`, the Pydantic JSON schema in `format` and in the prompt, `temperature: 0`.
+
+| Sample | Expected | Thinking on (default) | Thinking off, original prompt | Thinking off, final prompt |
+|---|---|---|---|---|
+| SAT Constancia de Situación Fiscal | no deadline, no amount | correct, ~74 s | **wrong: issue date 2026-08-20 reported as deadline**, ~48 s | correct, 22–26 s |
+| Telmex bill, $2,798.00, "pagar antes de: INMEDIATO" | no date, $2,798.00 | correct, 55–59 s | correct, ~18 s | correct, 10–25 s |
+
+Decisions:
+- **Spanish reading quality is good enough to continue**: document type, issuer and amount
+  were right in every run, and the explanations are plain Mexican Spanish ("usted").
+- **Disable thinking (`think: false`)**: Gemma 4 thinks by default in Ollama, spending about
+  1,100 hidden tokens per photo and roughly doubling latency. With thinking off, output is
+  about 180 tokens.
+- **Spell out what a deadline is in the prompt**: turning thinking off made the model confuse
+  the SAT issue date with a deadline. The prompt now lists what counts as a deadline
+  ("fecha límite", "pagar antes de", "vence") and what doesn't (issue, emission, billing
+  dates; "inmediato"). That fixed it in two consecutive runs.
+- Caveat: only two samples, and neither has a printed due date, so positive deadline
+  extraction is only covered by a text-only check ("Fecha límite de pago: 18 OCT 2026"
+  → `2026-10-18`). The web loading state must be designed for waits of up to ~30 s.
