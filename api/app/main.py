@@ -4,8 +4,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app import models  # noqa: F401  (registers tables)
 from app.config import get_settings
 from app.db import init_db
+from app.routers import documents
 
 
 @asynccontextmanager
@@ -23,6 +25,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(documents.router)
 
 
 @app.get("/health")

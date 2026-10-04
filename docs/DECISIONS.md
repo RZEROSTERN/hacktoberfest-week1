@@ -75,3 +75,25 @@ Decisions:
 - Caveat: only two samples, and neither has a printed due date, so positive deadline
   extraction is only covered by a text-only check ("Fecha límite de pago: 18 OCT 2026"
   → `2026-10-18`). The web loading state must be designed for waits of up to ~30 s.
+
+## 2026-10-04: `/documents/analyze` design
+
+- **Access control**: every `/documents` route requires an `X-Access-Code` header matching
+  `ACCESS_CODE` (constant-time comparison). An empty `ACCESS_CODE` rejects everything, so a
+  misconfigured deploy fails closed. The web app's server adds the header; the browser never
+  sees the code.
+- **Upload validation before the model**: content type must be JPEG, PNG or WEBP, the size
+  is checked against `MAX_IMAGE_BYTES` (10 MB) both from the declared size and while reading,
+  and the first bytes must match the format's signature. Rejections return 401/413/415
+  without calling the model.
+- **In-memory only**: the upload is read into a `bytes` object, base64-encoded for Ollama and
+  dropped; nothing touches disk. Logs record only failure types (e.g. `ReadTimeout`), never
+  prompts, images or model output.
+- **Retry policy**: invalid model output (fails Pydantic validation) is retried once. A
+  second invalid output, a timeout or a connection error returns a fixed low-confidence
+  "No se pudo leer" result that asks for another photo; a model failure never becomes a 500.
+- **What gets saved**: only results with `high`/`medium` confidence are stored in SQLite
+  (structured fields only). Low-confidence results are returned with `id: null` and not saved,
+  so the history never shows unreadable documents.
+- Async tests use `pytest-asyncio` in auto mode; the Ollama client accepts an injectable
+  `httpx` transport so tests mock the model with `httpx.MockTransport`.

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -36,3 +36,10 @@ class DocumentAnalysis(BaseModel):
     explanation: str = Field(
         description="Warm, plain Mexican Spanish explanation in 2-4 short sentences, no jargon."
     )
+
+
+class DocumentRead(DocumentAnalysis):
+    """API response: the analysis plus its history id (null when it was not saved)."""
+
+    id: int | None
+    created_at: datetime | None
