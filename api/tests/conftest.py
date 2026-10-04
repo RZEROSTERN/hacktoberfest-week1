@@ -4,6 +4,9 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+SAMPLES = Path(__file__).resolve().parents[2] / "samples"
+AUTH = {"X-Access-Code": "test-code"}
+
 
 @pytest.fixture
 def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
@@ -21,5 +24,6 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
     with TestClient(app) as test_client:
         yield test_client
 
+    app.dependency_overrides.clear()
     get_settings.cache_clear()
     db._engine = None
