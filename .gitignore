@@ -1,0 +1,13 @@
+# Secrets and machine-specific settings
+.env
+.env.*
+!.env.example
+CLAUDE.local.md
+
+# Local data
+*.db
+
+# OS / editors
+.DS_Store
+.idea
+.vscode

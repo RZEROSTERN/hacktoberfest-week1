@@ -1,0 +1,50 @@
+# Render Blueprint: web + API deploy from master. Gemma 4 runs on a separate GPU machine
+# (see deploy/gpu-droplet/), reached through OLLAMA_BASE_URL with a bearer token.
+services:
+  # Private: only reachable from the web service over Render's private network.
+  - type: pserv
+    name: paperwork-api
+    runtime: docker
+    rootDir: api
+    branch: master
+    region: virginia
+    plan: 1c-2g # Whisper small (int8) + FastAPI fit in 2 GB
+    disk:
+      name: data
+      mountPath: /data # SQLite + downloaded Whisper weights; never images or audio
+      sizeGB: 2
+    envVars:
+      - key: ACCESS_CODE
+        sync: false
+      - key: OLLAMA_BASE_URL
+        sync: false # e.g. https://203-0-113-4.sslip.io
+      - key: OLLAMA_API_KEY
+        sync: false
+      - key: OLLAMA_MODEL
+        value: gemma4:e4b
+      - key: OLLAMA_TIMEOUT_SECONDS
+        value: 180
+      - key: DATABASE_URL
+        value: sqlite:////data/paperwork.db
+      - key: WHISPER_MODEL_DIR
+        value: /data/models
+
+  - type: web
+    name: paperwork-web
+    runtime: docker
+    rootDir: web
+    branch: master
+    region: virginia
+    plan: 0.5c-512mb
+    healthCheckPath: /acceso
+    envVars:
+      - key: NUXT_API_BASE
+        fromService:
+          type: pserv
+          name: paperwork-api
+          property: hostport
+      - key: NUXT_ACCESS_CODE
+        fromService:
+          type: pserv
+          name: paperwork-api
+          envVarKey: ACCESS_CODE

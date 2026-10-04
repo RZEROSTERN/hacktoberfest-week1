@@ -3,8 +3,8 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import App from '~/app.vue'
 
 describe('App', () => {
-  it('renders the welcome page', async () => {
+  it('renders the app name in the header', async () => {
     const wrapper = await mountSuspended(App)
-    expect(wrapper.html()).toContain('Nuxt')
+    expect(wrapper.text()).toContain('Traductor de Papeles')
   })
 })
