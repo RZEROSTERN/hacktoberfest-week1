@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { formatDate, formatMoney } from '~/utils/strings'
 import { isValidCode } from '../../server/utils/access'
+import { withScheme } from '../../server/utils/proxy'
 
 describe('formatting', () => {
   it('formats MXN amounts', () => {
@@ -23,5 +24,13 @@ describe('isValidCode', () => {
   it('rejects everything when no code is configured', () => {
     expect(isValidCode('', '')).toBe(false)
     expect(isValidCode('anything', '')).toBe(false)
+  })
+})
+
+describe('withScheme', () => {
+  it('adds http:// to a private host:port and keeps full URLs', () => {
+    expect(withScheme('paperwork-api:8000')).toBe('http://paperwork-api:8000')
+    expect(withScheme('http://localhost:8000/')).toBe('http://localhost:8000')
+    expect(withScheme('https://api.example.com')).toBe('https://api.example.com')
   })
 })
