@@ -92,3 +92,26 @@ def test_long_lines_are_folded_at_75_octets() -> None:
     folded = _fold("DESCRIPTION:" + "ñ" * 100)
     assert all(len(line.encode()) <= 75 for line in folded.split("\r\n"))
     assert folded.replace("\r\n ", "") == "DESCRIPTION:" + "ñ" * 100
+
+
+def test_reminder_follows_the_requested_language(client: TestClient) -> None:
+    document = add_document()
+
+    english = client.get(f"/documents/{document.id}/reminder.ics?lang=en", headers=AUTH)
+    spanish = client.get(f"/documents/{document.id}/reminder.ics", headers=AUTH)
+    english_text = english.text.replace("\r\n ", "")  # unfold long lines
+    spanish_text = spanish.text.replace("\r\n ", "")
+
+    assert f'filename="reminder-{document.id}.ics"' in english.headers["content-disposition"]
+    assert "SUMMARY:Due: Recibo de luz" in english_text
+    assert "Amount: $1\\,482.50 MXN" in english_text
+    assert "tomorrow" in english_text and "in 3 days" in english_text
+    assert f'filename="recordatorio-{document.id}.ics"' in spanish.headers["content-disposition"]
+    assert "SUMMARY:Vence: Recibo de luz" in spanish_text
+    assert "mañana" in spanish_text and "en 3 días" in spanish_text
+
+
+def test_reminder_rejects_unsupported_language(client: TestClient) -> None:
+    document = add_document()
+    response = client.get(f"/documents/{document.id}/reminder.ics?lang=fr", headers=AUTH)
+    assert response.status_code == 422

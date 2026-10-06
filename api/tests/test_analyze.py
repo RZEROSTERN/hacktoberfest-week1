@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
 from app.db import get_engine
+from app.i18n import Lang
 from app.llm import get_llm, unreadable_result
 from app.main import app
 from app.models import Document
@@ -30,9 +31,11 @@ class FakeLLM:
     def __init__(self, result: DocumentAnalysis):
         self.result = result
         self.calls = 0
+        self.langs: list[Lang] = []
 
-    async def analyze_document(self, image: bytes) -> DocumentAnalysis:
+    async def analyze_document(self, image: bytes, lang: Lang = "es") -> DocumentAnalysis:
         self.calls += 1
+        self.langs.append(lang)
         return self.result
 
 
@@ -47,9 +50,11 @@ def post_image(
     data: bytes = PNG,
     content_type: str = "image/png",
     headers: dict[str, str] = AUTH,
+    params: dict[str, str] | None = None,
 ) -> httpx.Response:
     response: httpx.Response = client.post(
         "/documents/analyze",
+        params=params,
         files={"image": ("photo.png", data, content_type)},
         headers=headers,
     )
@@ -102,4 +107,17 @@ def test_rejects_oversized_image(client: TestClient, monkeypatch: pytest.MonkeyP
     monkeypatch.setattr(get_settings(), "max_image_bytes", 32)
     fake = use_llm(TELMEX)
     assert post_image(client).status_code == 413
+    assert fake.calls == 0
+
+
+def test_language_defaults_to_spanish_and_follows_the_lang_parameter(client: TestClient) -> None:
+    fake = use_llm(TELMEX)
+    assert post_image(client).status_code == 200
+    assert post_image(client, params={"lang": "en"}).status_code == 200
+    assert fake.langs == ["es", "en"]
+
+
+def test_unsupported_language_is_rejected_before_calling_model(client: TestClient) -> None:
+    fake = use_llm(TELMEX)
+    assert post_image(client, params={"lang": "fr"}).status_code == 422
     assert fake.calls == 0
