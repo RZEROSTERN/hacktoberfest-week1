@@ -168,17 +168,22 @@ Submissions closed **Mon Oct 5, 2026, 00:59 Mexico City time** (= 06:59 UTC = Su
 
 ### Commits after the deadline
 
-Added on Tue Oct 6, 2026, on `feature/i18n`: Spanish and English support.
+Added on Tue Oct 6, 2026: Spanish and English support (`feature/i18n`, PR #13) and its release
+(`release/1.1.0`).
 
 | Commit | Change |
 |---|---|
 | `3c5ffac` | `feat(api): answer in Spanish or English` |
 | `27c9199` | `feat(web): add Spanish and English with a language switcher` |
 | `1565eb0` | `docs: document Spanish and English support` |
+| `762ce73` | `docs: list commits made after the deadline` |
+| `8f038ad` | `Merge pull request #13 from RZEROSTERN/feature/i18n` |
+| `53ea3ba` | `chore(release): 1.1.0` |
 
-The commit that adds this table (`docs: list commits made after the deadline`) and the merge
-commit of its pull request are also after the deadline; a commit can't contain its own hash,
-so they are only named here.
+Also after the deadline are the commit that adds the last three rows (`docs: list the commits of
+release 1.1.0`), the merge commit of the release pull request, and the merge of `master` back
+into `develop`. A commit can't contain its own hash and the merges don't exist yet, so they are
+only named here.
 
 ## Built with AI assistance
 
