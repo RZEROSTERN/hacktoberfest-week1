@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { prepareImage } from '~/utils/image'
-import { t } from '~/utils/strings'
 
+const { t } = useI18n()
 const { analyze } = useDocuments()
 const lastResult = useLastResult()
 
@@ -28,7 +28,7 @@ async function onPhoto(event: Event) {
     await navigateTo(result.id ? `/documentos/${result.id}` : '/resultado')
   }
   catch (err) {
-    error.value = errorMessage(err)
+    error.value = errorMessage(err, t)
     status.value = 'error'
   }
 }
@@ -49,49 +49,49 @@ async function onPhoto(event: Event) {
 
     <LoadingState
       v-if="status === 'preparing'"
-      :title="t.photo.preparing"
+      :title="t('photo.preparing')"
     />
     <LoadingState
       v-else-if="status === 'reading'"
-      :title="t.photo.reading"
-      :hint="t.photo.readingHint"
+      :title="t('photo.reading')"
+      :hint="t('photo.readingHint')"
     />
     <ErrorState
       v-else-if="status === 'error'"
-      :title="t.photo.errorTitle"
+      :title="t('photo.errorTitle')"
       :message="error"
     >
       <BigButton
         icon="📷"
         @click="takePhoto"
       >
-        {{ t.photo.tryAgain }}
+        {{ t('photo.tryAgain') }}
       </BigButton>
     </ErrorState>
 
     <template v-else>
       <p class="lead">
-        {{ t.home.hint }}
+        {{ t('home.hint') }}
       </p>
       <div class="actions">
         <BigButton
           icon="📷"
           @click="takePhoto"
         >
-          {{ t.home.takePhoto }}
+          {{ t('home.takePhoto') }}
         </BigButton>
         <BigButton
           icon="🎤"
           to="/preguntar"
         >
-          {{ t.home.askVoice }}
+          {{ t('home.askVoice') }}
         </BigButton>
         <BigButton
           icon="🗂️"
           variant="secondary"
           to="/documentos"
         >
-          {{ t.home.history }}
+          {{ t('home.history') }}
         </BigButton>
       </div>
     </template>

@@ -7,7 +7,8 @@ import pytest
 from pydantic import SecretStr
 
 from app.config import Settings
-from app.llm import OllamaClient
+from app.i18n import LANGUAGES, Lang
+from app.llm import ANALYZE_PROMPT, QUESTIONS_PROMPT, OllamaClient, render_prompt
 from tests.test_analyze import TELMEX
 
 
@@ -88,3 +89,41 @@ async def test_bearer_token_is_sent_only_when_configured() -> None:
     await OllamaClient(with_key, transport=transport).analyze_document(b"img")
 
     assert seen == [None, "Bearer s3cret"]
+
+
+@pytest.mark.parametrize("name", [ANALYZE_PROMPT, QUESTIONS_PROMPT])
+@pytest.mark.parametrize("lang", ["es", "en"])
+def test_rendered_prompt_has_no_unfilled_language_markers(name: str, lang: Lang) -> None:
+    prompt = render_prompt(name, lang)
+    assert "{language_style}" not in prompt and "{language_note}" not in prompt
+    assert LANGUAGES[lang].style in prompt
+
+
+async def test_prompt_asks_for_the_requested_language() -> None:
+    seen: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(json.loads(request.content)["messages"][0]["content"])
+        return chat_reply(TELMEX.model_dump_json())
+
+    llm = client_with(handler)
+    await llm.analyze_document(b"img", "es")
+    await llm.analyze_document(b"img", "en")
+
+    assert 'Mexican Spanish ("usted")' in seen[0] and "plain English" not in seen[0]
+    assert "plain English" in seen[1] and "Mexican Spanish" not in seen[1]
+    assert "{schema}" not in seen[1]
+
+
+async def test_failure_fallback_is_in_the_requested_language() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("down")
+
+    llm = client_with(handler)
+    spanish = await llm.analyze_document(b"img")
+    english = await llm.analyze_document(b"img", "en")
+
+    assert spanish.document_type == "No se pudo leer"
+    assert english.document_type == "Could not be read"
+    assert english.confidence == "low"
+    assert "another photo" in english.required_actions[0]

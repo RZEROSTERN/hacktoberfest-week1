@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { DocumentResult } from '~~/shared/types'
-import { formatMoney, formatShortDate, t } from '~/utils/strings'
 
 defineProps<{ document: DocumentResult, dueLabel?: string }>()
+
+const { t } = useI18n()
+const { formatMoney, formatShortDate } = useFormatters()
 </script>
 
 <template>
@@ -18,14 +20,14 @@ defineProps<{ document: DocumentResult, dueLabel?: string }>()
     <strong class="doc-type">{{ document.document_type }}</strong>
     <span v-if="document.issuer">{{ document.issuer }}</span>
     <span v-if="document.amount_due !== null">{{ formatMoney(document.amount_due) }}</span>
-    <span v-if="document.deadline">{{ t.history.due }}: {{ formatShortDate(document.deadline) }}</span>
+    <span v-if="document.deadline">{{ t('history.due') }}: {{ formatShortDate(document.deadline) }}</span>
     <span
       v-if="document.is_suspicious"
       class="doc-flag"
-    >⚠️ {{ t.history.suspicious }}</span>
+    >⚠️ {{ t('history.suspicious') }}</span>
     <span
       v-if="!dueLabel && document.created_at"
       class="doc-meta"
-    >{{ t.history.scanned }} {{ formatShortDate(document.created_at) }}</span>
+    >{{ t('history.scanned') }} {{ formatShortDate(document.created_at) }}</span>
   </NuxtLink>
 </template>

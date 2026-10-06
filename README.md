@@ -10,7 +10,8 @@ summons. Every one of them is written in a dense bureaucratic Spanish, and every
 ends up as a phone call to me: *"Mijo, ¿qué es esto? ¿Tengo que pagar algo?"*
 
 **Paperwork Translator** is a mobile web app built for her. She takes a photo of the document
-(or asks a question out loud) and gets an answer in plain, warm Mexican Spanish:
+(or asks a question out loud) and gets an answer in plain, warm Mexican Spanish (or in English,
+for family and friends who'd rather read it that way; there's a language switch in the header):
 
 1. **What it is** and who sent it.
 2. **When and how much**: the deadline and the amount, only if they're actually printed.
@@ -36,7 +37,10 @@ An older, non-technical user on a phone. That drives every design choice:
 - Two big buttons on the home screen, **"Tomar foto"** and **"Preguntar con voz"**, and one
   primary action per screen.
 - 20 px base text, 72 px buttons, high contrast, and loading and error messages always visible
-  in plain Spanish ("Estoy leyendo su papel… puede tardar hasta un minuto").
+  in plain language ("Estoy leyendo su papel… puede tardar hasta un minuto").
+- Spanish by default, English one tap away: **Español** / **English** buttons in the header,
+  remembered on the phone. The choice also sets the language of the explanations, of the
+  spoken question and of the calendar reminder.
 - No accounts or passwords to remember: a single family access code, entered once.
 - Installable to the home screen as a PWA.
 - The AI **explains only**. It never gives legal or financial advice, never makes up an
@@ -64,8 +68,8 @@ flowchart LR
 
 | Path | What it is |
 |---|---|
-| `api/` | FastAPI (Python 3.12, uv, Pydantic, SQLModel/SQLite, pytest, ruff, mypy). `POST /documents/analyze`, `GET /documents`, `GET /documents/{id}`, `GET /documents/{id}/reminder.ics`, `POST /questions/voice`. Versioned prompts in `api/prompts/`. |
-| `web/` | Nuxt 4 (TypeScript strict), mobile-first PWA, UI entirely in Spanish. Server routes proxy to the API so the API URL and access code never reach the browser. |
+| `api/` | FastAPI (Python 3.12, uv, Pydantic, SQLModel/SQLite, pytest, ruff, mypy). `POST /documents/analyze`, `GET /documents`, `GET /documents/{id}`, `GET /documents/{id}/reminder.ics`, `POST /questions/voice` (the three that produce text take `?lang=es|en`, default `es`). Versioned prompts in `api/prompts/`. |
+| `web/` | Nuxt 4 (TypeScript strict), mobile-first PWA, UI in Spanish and English (`@nuxtjs/i18n`, strings in `web/i18n/locales/`). Server routes proxy to the API so the API URL and access code never reach the browser. |
 | `samples/` | Anonymized test documents and a synthetic voice question. The only documents used in tests and demos. |
 | `deploy/` | GPU droplet setup script and deployment guide. |
 | `docs/DECISIONS.md` | Every technical decision and why it was made, including the model measurements. |
@@ -77,7 +81,7 @@ it, retrying once and otherwise returning an honest "No pude leer bien su papel"
 structured fields are saved.
 
 **Voice:** Ollama doesn't document audio input for Gemma 4 yet, so the API transcribes speech
-in memory with faster-whisper (`small`, Spanish), then Gemma 4 answers using only the stored
+in memory with faster-whisper (`small`, told to expect the language she picked), then Gemma 4 answers using only the stored
 fields of the document she's asking about.
 
 ### Privacy
@@ -164,7 +168,22 @@ Submissions closed **Mon Oct 5, 2026, 00:59 Mexico City time** (= 06:59 UTC = Su
 
 ### Commits after the deadline
 
-*None yet.*
+Added on Tue Oct 6, 2026: Spanish and English support (`feature/i18n`, PR #13) and its release
+(`release/1.1.0`).
+
+| Commit | Change |
+|---|---|
+| `3c5ffac` | `feat(api): answer in Spanish or English` |
+| `27c9199` | `feat(web): add Spanish and English with a language switcher` |
+| `1565eb0` | `docs: document Spanish and English support` |
+| `762ce73` | `docs: list commits made after the deadline` |
+| `8f038ad` | `Merge pull request #13 from RZEROSTERN/feature/i18n` |
+| `53ea3ba` | `chore(release): 1.1.0` |
+
+Also after the deadline are the commit that adds the last three rows (`docs: list the commits of
+release 1.1.0`), the merge commit of the release pull request, and the merge of `master` back
+into `develop`. A commit can't contain its own hash and the merges don't exist yet, so they are
+only named here.
 
 ## Built with AI assistance
 

@@ -1,6 +1,6 @@
 [project]
 name = "paperwork-api"
-version = "1.0.0"
+version = "1.1.0"
 description = "Paperwork Translator API: explains documents in plain Spanish using Gemma 4 via Ollama"
 requires-python = ">=3.12"
 dependencies = [

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { splitHistory } from '~/composables/useHistory'
-import { daysUntil } from '~/utils/strings'
+import { daysUntil } from '~/utils/format'
 import type { DocumentResult } from '~~/shared/types'
 
 function doc(id: number, deadline: string | null): DocumentResult {

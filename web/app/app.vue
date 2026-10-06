@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { t } from '~/utils/strings'
+const { t, localeProperties } = useI18n()
+
+// The module does not set these itself; screen readers need the right language to pronounce it.
+useHead({
+  htmlAttrs: { lang: () => localeProperties.value.language },
+  title: () => t('appName')
+})
 </script>
 
 <template>
@@ -10,8 +16,9 @@ import { t } from '~/utils/strings'
         to="/"
         class="app-title"
       >
-        {{ t.appName }}
+        {{ t('appName') }}
       </NuxtLink>
+      <LanguageSwitcher />
     </header>
     <main class="app-main">
       <NuxtPage />

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DocumentResult, VoiceAnswer } from '~~/shared/types'
-import { t } from '~/utils/strings'
 
+const { t } = useI18n()
 const route = useRoute()
 const documentId = Number(route.query.documento) || undefined
 
@@ -27,7 +27,7 @@ async function record() {
   }
   catch (err) {
     const kind = (err as Error).message
-    error.value = kind === 'permission' ? t.voice.errorPermission : t.voice.errorUnsupported
+    error.value = kind === 'permission' ? t('voice.errorPermission') : t('voice.errorUnsupported')
     status.value = 'error'
     return
   }
@@ -38,7 +38,7 @@ async function record() {
   }
   catch (err) {
     const code = (err as { statusCode?: number }).statusCode
-    error.value = code === 422 ? t.voice.errorAudio : errorMessage(err)
+    error.value = code === 422 ? t('voice.errorAudio') : errorMessage(err, t)
     status.value = 'error'
   }
 }
@@ -46,23 +46,23 @@ async function record() {
 
 <template>
   <div class="page">
-    <h1>{{ t.voice.title }}</h1>
+    <h1>{{ t('voice.title') }}</h1>
     <p
       v-if="document"
       class="card"
     >
-      {{ t.voice.aboutDocument }} <strong>{{ document.document_type }}</strong>
+      {{ t('voice.aboutDocument') }} <strong>{{ document.document_type }}</strong>
     </p>
 
     <template v-if="status === 'idle'">
       <p class="lead">
-        {{ t.voice.hint }}
+        {{ t('voice.hint') }}
       </p>
       <BigButton
         icon="🎤"
         @click="record"
       >
-        {{ t.voice.start }}
+        {{ t('voice.start') }}
       </BigButton>
     </template>
 
@@ -77,10 +77,10 @@ async function record() {
           aria-hidden="true"
         />
         <p class="state-title">
-          {{ t.voice.recording }}
+          {{ t('voice.recording') }}
         </p>
         <p class="state-hint">
-          {{ t.voice.seconds(seconds) }}
+          {{ t('voice.seconds', { seconds }) }}
         </p>
       </div>
       <BigButton
@@ -89,14 +89,14 @@ async function record() {
         class="stop"
         @click="stop"
       >
-        {{ t.voice.stop }}
+        {{ t('voice.stop') }}
       </BigButton>
     </template>
 
     <LoadingState
       v-else-if="status === 'thinking'"
-      :title="t.voice.listening"
-      :hint="t.voice.listeningHint"
+      :title="t('voice.listening')"
+      :hint="t('voice.listeningHint')"
     />
 
     <template v-else-if="status === 'answered' && result">
@@ -104,39 +104,39 @@ async function record() {
         v-if="result.question"
         class="card"
       >
-        <h2>{{ t.voice.youAsked }}</h2>
+        <h2>{{ t('voice.youAsked') }}</h2>
         <p>“{{ result.question }}”</p>
       </section>
       <section
         class="card"
         :class="{ warning: result.confidence === 'low' }"
       >
-        <h2>{{ t.voice.answer }}</h2>
+        <h2>{{ t('voice.answer') }}</h2>
         <p class="big">
           {{ result.answer }}
         </p>
       </section>
       <p class="disclaimer">
-        {{ t.result.disclaimer }}
+        {{ t('result.disclaimer') }}
       </p>
       <BigButton
         icon="🎤"
         @click="record"
       >
-        {{ t.voice.askAgain }}
+        {{ t('voice.askAgain') }}
       </BigButton>
     </template>
 
     <ErrorState
       v-else-if="status === 'error'"
-      :title="t.voice.errorTitle"
+      :title="t('voice.errorTitle')"
       :message="error"
     >
       <BigButton
         icon="🎤"
         @click="record"
       >
-        {{ t.voice.askAgain }}
+        {{ t('voice.askAgain') }}
       </BigButton>
     </ErrorState>
 
@@ -144,7 +144,7 @@ async function record() {
       variant="secondary"
       :to="documentId ? `/documentos/${documentId}` : '/'"
     >
-      {{ t.common.back }}
+      {{ t('common.back') }}
     </BigButton>
   </div>
 </template>

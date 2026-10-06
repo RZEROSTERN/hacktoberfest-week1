@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { t } from '~/utils/strings'
 
+const { t } = useI18n()
 const route = useRoute()
 const id = String(route.params.id)
 const { get, reminderUrl } = useDocuments()
@@ -12,12 +12,12 @@ const { data: result, status, error } = await useAsyncData(`document-${id}`, () 
   <div class="page">
     <LoadingState
       v-if="status === 'pending'"
-      :title="t.common.loading"
+      :title="t('common.loading')"
     />
     <ErrorState
       v-else-if="error || !result"
-      :title="t.photo.errorTitle"
-      :message="t.result.notFound"
+      :title="t('photo.errorTitle')"
+      :message="t('result.notFound')"
     />
     <AnalysisResult
       v-else
@@ -30,13 +30,13 @@ const { data: result, status, error } = await useAsyncData(`document-${id}`, () 
         icon="🎤"
         :to="`/preguntar?documento=${result.id}`"
       >
-        {{ t.voice.askAboutThis }}
+        {{ t('voice.askAboutThis') }}
       </BigButton>
       <BigButton
         variant="secondary"
         to="/"
       >
-        {{ t.result.home }}
+        {{ t('result.home') }}
       </BigButton>
     </div>
   </div>

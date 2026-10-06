@@ -1,0 +1,85 @@
+{
+  "appName": "Paperwork Translator",
+  "tagline": "I explain your paperwork in simple words.",
+  "home": {
+    "takePhoto": "Take photo",
+    "askVoice": "Ask with your voice",
+    "history": "My papers",
+    "hint": "Take a photo of your bill, letter or notice, and I'll tell you what it is and what to do."
+  },
+  "access": {
+    "title": "Welcome",
+    "label": "Enter the family code",
+    "submit": "Enter",
+    "wrong": "That code isn't right. Ask your son for it.",
+    "error": "I couldn't check the code. Please try again in a moment."
+  },
+  "photo": {
+    "reading": "I'm reading your paper…",
+    "readingHint": "This can take up to a minute. Please keep the screen open.",
+    "preparing": "Getting the photo ready…",
+    "tryAgain": "Take another photo",
+    "errorTitle": "Something went wrong",
+    "errorNetwork": "I couldn't connect. Check your internet and try again.",
+    "errorTooBig": "The photo is too large. Please try taking it again.",
+    "errorType": "That file isn't a photo. Use the \"Take photo\" button.",
+    "errorGeneric": "I couldn't read the photo right now. Please try again later."
+  },
+  "result": {
+    "fraudTitle": "Careful! This might be a scam",
+    "fraudNever": "Never give out passwords, PINs, card numbers or personal information.",
+    "lowConfidenceTitle": "I couldn't read your paper well",
+    "whatIs": "What is it?",
+    "from": "Sent by",
+    "whenAndHowMuch": "When and how much?",
+    "deadline": "Deadline",
+    "amount": "Amount to pay",
+    "noDeadline": "I didn't find a deadline.",
+    "noAmount": "I didn't find an amount to pay.",
+    "whatToDo": "What do I need to do?",
+    "nothingToDo": "For now, you don't need to do anything.",
+    "addToCalendar": "Add to my calendar",
+    "disclaimer": "I only explain the paper; this is not legal or financial advice. If it's something serious, talk it over with your son or a professional.",
+    "home": "Back to start",
+    "notFound": "I couldn't find that paper."
+  },
+  "history": {
+    "title": "My papers",
+    "upcoming": "Upcoming deadlines",
+    "all": "All my papers",
+    "empty": "There are no papers yet. Take a photo to get started.",
+    "noUpcoming": "You have no upcoming deadlines.",
+    "due": "Due",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "suspicious": "Possible scam",
+    "scanned": "Checked on",
+    "inDays": "In {days} days"
+  },
+  "voice": {
+    "title": "Ask me with your voice",
+    "aboutDocument": "Your question is about this paper:",
+    "hint": "Tap the button, ask your question, then tap \"I'm done\".",
+    "start": "Start talking",
+    "stop": "I'm done",
+    "recording": "I'm listening…",
+    "listening": "I'm thinking about your answer…",
+    "listeningHint": "This can take up to a minute.",
+    "youAsked": "You asked",
+    "answer": "My answer",
+    "askAgain": "Ask another question",
+    "askAboutThis": "Ask about this paper",
+    "errorTitle": "I couldn't hear you",
+    "errorPermission": "I need permission to use the microphone. Tap \"Allow\" when the phone asks you.",
+    "errorUnsupported": "This phone won't let me record. Ask your son for help.",
+    "errorAudio": "I couldn't hear the recording. Please try again.",
+    "seconds": "{seconds} s"
+  },
+  "common": {
+    "loading": "Loading…",
+    "back": "Back"
+  },
+  "language": {
+    "label": "Language"
+  }
+}
