@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { t } from '~/utils/strings'
-
 // Shows a result that was not saved (e.g. an unreadable photo).
+const { t } = useI18n()
 const lastResult = useLastResult()
 if (!lastResult.value) await navigateTo('/')
 </script>
@@ -17,7 +16,7 @@ if (!lastResult.value) await navigateTo('/')
         icon="📷"
         to="/"
       >
-        {{ t.photo.tryAgain }}
+        {{ t('photo.tryAgain') }}
       </BigButton>
     </div>
   </div>

@@ -2,13 +2,11 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/eslint', '@vite-pwa/nuxt'],
+  modules: ['@nuxt/eslint', '@nuxtjs/i18n', '@vite-pwa/nuxt'],
   typescript: { strict: true },
   css: ['~/assets/main.css'],
   app: {
     head: {
-      htmlAttrs: { lang: 'es-MX' },
-      title: 'Traductor de Papeles',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'theme-color', content: '#0b4f9c' }
@@ -42,6 +40,21 @@ export default defineNuxtConfig({
       // never documents or API responses.
       globPatterns: ['**/*.{js,css,png,svg,ico}'],
       navigateFallback: null
+    }
+  },
+  // Spanish is the default; English is opt-in. `no_prefix` keeps every URL the same in both
+  // languages (the access middleware and the PWA rely on them), so the choice lives in a cookie.
+  i18n: {
+    strategy: 'no_prefix',
+    defaultLocale: 'es',
+    locales: [
+      { code: 'es', language: 'es-MX', name: 'Español', file: 'es.json' },
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.json' }
+    ],
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      fallbackLocale: 'es'
     }
   },
   // Overridden at runtime by NUXT_* env vars. Server-only keys never reach the browser.

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { t } from '~/utils/strings'
+const { t } = useI18n()
 
 const code = ref('')
 const error = ref('')
@@ -16,7 +16,7 @@ async function submit() {
   }
   catch (err) {
     const status = (err as { statusCode?: number }).statusCode
-    error.value = status === 401 ? t.access.wrong : t.access.error
+    error.value = status === 401 ? t('access.wrong') : t('access.error')
   }
   finally {
     sending.value = false
@@ -26,15 +26,15 @@ async function submit() {
 
 <template>
   <div class="page">
-    <h1>{{ t.access.title }}</h1>
+    <h1>{{ t('access.title') }}</h1>
     <p class="lead">
-      {{ t.tagline }}
+      {{ t('tagline') }}
     </p>
     <form
       class="access-form"
       @submit.prevent="submit"
     >
-      <label for="code">{{ t.access.label }}</label>
+      <label for="code">{{ t('access.label') }}</label>
       <input
         id="code"
         v-model="code"
@@ -54,7 +54,7 @@ async function submit() {
         class="big-button primary"
         :disabled="sending || !ready"
       >
-        {{ sending ? t.common.loading : t.access.submit }}
+        {{ sending ? t('common.loading') : t('access.submit') }}
       </button>
     </form>
   </div>

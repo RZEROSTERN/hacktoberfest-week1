@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { DocumentResult } from '~~/shared/types'
-import { formatDate, formatMoney, t } from '~/utils/strings'
 
 const props = defineProps<{ result: DocumentResult, reminderUrl?: string }>()
+const { t } = useI18n()
+const { formatDate, formatMoney } = useFormatters()
 const unreadable = computed(() => props.result.confidence === 'low')
 </script>
 
@@ -13,46 +14,46 @@ const unreadable = computed(() => props.result.confidence === 'low')
       class="card danger"
       role="alert"
     >
-      <h2>⚠️ {{ t.result.fraudTitle }}</h2>
+      <h2>⚠️ {{ t('result.fraudTitle') }}</h2>
       <p v-if="result.fraud_reason">
         {{ result.fraud_reason }}
       </p>
-      <p><strong>{{ t.result.fraudNever }}</strong></p>
+      <p><strong>{{ t('result.fraudNever') }}</strong></p>
     </section>
 
     <section
       v-if="unreadable"
       class="card warning"
     >
-      <h2>{{ t.result.lowConfidenceTitle }}</h2>
+      <h2>{{ t('result.lowConfidenceTitle') }}</h2>
       <p>{{ result.explanation }}</p>
     </section>
 
     <template v-else>
       <section class="card">
-        <h2>{{ t.result.whatIs }}</h2>
+        <h2>{{ t('result.whatIs') }}</h2>
         <p class="big">
           {{ result.document_type }}
         </p>
         <p v-if="result.issuer">
-          {{ t.result.from }}: <strong>{{ result.issuer }}</strong>
+          {{ t('result.from') }}: <strong>{{ result.issuer }}</strong>
         </p>
         <p>{{ result.explanation }}</p>
       </section>
 
       <section class="card">
-        <h2>{{ t.result.whenAndHowMuch }}</h2>
+        <h2>{{ t('result.whenAndHowMuch') }}</h2>
         <p v-if="result.deadline">
-          {{ t.result.deadline }}:<br><strong class="big">{{ formatDate(result.deadline) }}</strong>
+          {{ t('result.deadline') }}:<br><strong class="big">{{ formatDate(result.deadline) }}</strong>
         </p>
         <p v-else>
-          {{ t.result.noDeadline }}
+          {{ t('result.noDeadline') }}
         </p>
         <p v-if="result.amount_due !== null">
-          {{ t.result.amount }}:<br><strong class="big">{{ formatMoney(result.amount_due) }}</strong>
+          {{ t('result.amount') }}:<br><strong class="big">{{ formatMoney(result.amount_due) }}</strong>
         </p>
         <p v-else>
-          {{ t.result.noAmount }}
+          {{ t('result.noAmount') }}
         </p>
         <a
           v-if="result.deadline && reminderUrl"
@@ -64,12 +65,12 @@ const unreadable = computed(() => props.result.confidence === 'low')
             class="icon"
             aria-hidden="true"
           >📅</span>
-          {{ t.result.addToCalendar }}
+          {{ t('result.addToCalendar') }}
         </a>
       </section>
 
       <section class="card">
-        <h2>{{ t.result.whatToDo }}</h2>
+        <h2>{{ t('result.whatToDo') }}</h2>
         <ol
           v-if="result.required_actions.length"
           class="steps"
@@ -82,13 +83,13 @@ const unreadable = computed(() => props.result.confidence === 'low')
           </li>
         </ol>
         <p v-else>
-          {{ t.result.nothingToDo }}
+          {{ t('result.nothingToDo') }}
         </p>
       </section>
     </template>
 
     <p class="disclaimer">
-      {{ t.result.disclaimer }}
+      {{ t('result.disclaimer') }}
     </p>
   </article>
 </template>

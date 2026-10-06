@@ -1,5 +1,5 @@
 import type { DocumentResult } from '~~/shared/types'
-import { daysUntil } from '~/utils/strings'
+import { daysUntil } from '~/utils/format'
 
 export type UpcomingDocument = DocumentResult & { deadline: string, daysLeft: number }
 
