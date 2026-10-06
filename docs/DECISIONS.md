@@ -214,3 +214,61 @@ Decisions:
   entered once. Region `virginia`, close to DigitalOcean's US-East GPU regions.
 - Not verified before merging: `render.yaml` against a live Render account, and
   `setup.sh` on a real droplet (both need the owner's accounts).
+
+## 2026-10-06: Spanish and English, chosen by the user
+
+- **`@nuxtjs/i18n` 10.6 with `strategy: 'no_prefix'`**. URLs stay identical in both languages
+  (`/acceso`, `/documentos`, the access middleware and the PWA all rely on them) and the choice
+  lives in the `i18n_redirected` cookie. Per the module's docs, `no_prefix` means relying on
+  browser and cookie detection and switching with `setLocale()`, which also writes the cookie.
+  First visit: browser language if it is Spanish or English, otherwise Spanish; after that the
+  cookie wins. Spanish stays the default because it is the primary audience.
+- **Strings moved from `app/utils/strings.ts` to `i18n/locales/{es,en}.json`**, same key layout.
+  `utils/strings.ts` became `utils/format.ts` (money and dates only, now taking a locale);
+  `useFormatters()` binds them to the active language. A unit test fails if the two files differ
+  in keys or `{placeholders}`. Amounts stay MXN in both languages: English shows `MX$2,798.00`
+  so nobody reads pesos as dollars.
+- **Switcher = two big buttons** ("Español", "English", each in its own language) in the header,
+  56 px high with 20 px text, `aria-pressed` and a `lang` attribute on each. Not a dropdown: an
+  older user shouldn't have to find a menu, and she can change it without reading the current
+  language.
+- **The module does not set `<html lang>`** (the docs imply it does; the rendered HTML had a bare
+  `<html>`), so `app.vue` sets it from the locale's BCP 47 tag (`es-MX`, `en-US`) together with
+  the page title. Screen readers need it to pronounce the page.
+- **Locale messages load from `/_i18n/<hash>/<locale>/messages.json`**, a server route of the
+  module. The family-access middleware would redirect it, so switching language on the login
+  page failed. `/_i18n` is now a public prefix (static UI text, nothing personal), and
+  `isPublicPath()` has a test. Found by driving real Chrome; unit tests couldn't see it.
+- **API language = `?lang=es|en` query parameter** (default `es`, anything else is a 422) on the
+  three endpoints whose output depends on it: `POST /documents/analyze`,
+  `POST /questions/voice`, `GET /documents/{id}/reminder.ics`. A query parameter, not
+  `Accept-Language`, because the calendar link is a plain `<a download>` that can't set headers,
+  and the Nuxt proxy already forwards the query string. One mechanism for all three.
+- **Prompts bumped to `analyze_v2.md` / `questions_v2.md`**: the language rule became
+  `{language_style}` (`warm, simple Mexican Spanish ("usted")` or `warm, plain English`), and the
+  schema descriptions say "response language" instead of "Spanish". The Spanish rendering is
+  the v1 text apart from that, and the real model still gives the same facts on the Telmex
+  sample (amount 2798.0, no invented deadline). `analyze_v1.md` stays because
+  `scripts/spike_samples.py` and the spike results above pin it; `questions_v1.md` was removed.
+  For English the prompt also says to keep institution names and document titles as printed
+  (CFE, SAT, "Recibo de luz") and add a short English translation, since the paper itself is
+  always Mexican Spanish.
+- **Fixed phrases the server writes itself** (unreadable-photo and "couldn't answer" fallbacks,
+  "didn't hear you", the `.ics` summary, alarm text and filename) live in `app/i18n.py`, one
+  dataclass per language.
+- **Voice: Whisper is told to expect the UI language** (`language="es"` or `"en"`, same `small`
+  multilingual model). Checked with a synthetic English question (macOS `say`, "Samantha",
+  `samples/question_telmex_en.m4a`): transcribed correctly with `en`; forced to `es` it came out
+  as "¿Cuánto tengo que pagar por este bill?". So speaking English under the Spanish UI, or the
+  reverse, transcribes badly. Language auto-detection on 3–10 s clips was not tried; the user
+  picks the language, so forcing it is predictable.
+- **Known limitations**:
+  - Saved documents keep the language they were scanned in; switching language changes the
+    screen text, not the stored explanation. Re-scan to get it in the other language. (Storing
+    a language per row needs a SQLite migration the project doesn't have yet.)
+  - The PWA manifest is one static file, so the installed app keeps its Spanish name
+    ("Mis Papeles").
+  - English messages are fetched on first switch and aren't in the service worker's precache, so
+    switching language for the first time while offline fails; the page stays in its language.
+  - Test runs start in Spanish through `test/setup.ts`, because happy-dom reports
+    `navigator.language` as `en-US` and detection would otherwise pick English.
