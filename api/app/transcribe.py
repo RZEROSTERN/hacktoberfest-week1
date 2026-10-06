@@ -7,6 +7,7 @@ from functools import cached_property, lru_cache
 from faster_whisper import WhisperModel
 
 from app.config import Settings, get_settings
+from app.i18n import Lang
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +29,11 @@ class Transcriber:
             download_root=self._settings.whisper_model_dir,
         )
 
-    def transcribe(self, audio: bytes) -> str:
-        """Blocking; call from a worker thread."""
+    def transcribe(self, audio: bytes, lang: Lang) -> str:
+        """Blocking; call from a worker thread. Whisper is told which language to expect."""
         try:
             segments, _ = self._model.transcribe(
-                io.BytesIO(audio), language="es", vad_filter=True, beam_size=5
+                io.BytesIO(audio), language=lang, vad_filter=True, beam_size=5
             )
             return " ".join(segment.text.strip() for segment in segments).strip()
         except Exception as error:  # PyAV/CTranslate2 raise many unrelated types

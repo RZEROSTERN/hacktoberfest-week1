@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime, timedelta
 
+from app.i18n import DEFAULT_LANG, LANGUAGES, Lang
 from app.models import Document
 
 REMINDER_DAYS_BEFORE = (3, 1)
@@ -29,21 +30,22 @@ def _fold(line: str) -> str:
     return "\r\n ".join(parts)
 
 
-def build_reminder(document: Document) -> str:
+def build_reminder(document: Document, lang: Lang = DEFAULT_LANG) -> str:
     if document.deadline is None:
         raise ValueError("document has no deadline")
 
+    language = LANGUAGES[lang]
     start = document.deadline
-    summary = f"Vence: {document.document_type}"
+    summary = language.reminder_summary.format(document_type=document.document_type)
     details = [document.explanation]
     if document.amount_due is not None:
-        details.append(f"Monto: ${document.amount_due:,.2f} MXN")
+        details.append(language.reminder_amount.format(amount=document.amount_due))
     details += [f"- {step}" for step in document.required_actions]
 
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
-        "PRODID:-//Paperwork Translator//ES",
+        f"PRODID:-//Paperwork Translator//{lang.upper()}",
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
         "BEGIN:VEVENT",
@@ -55,7 +57,9 @@ def build_reminder(document: Document) -> str:
         f"DESCRIPTION:{_escape(chr(10).join(details))}",
     ]
     for days in REMINDER_DAYS_BEFORE:
-        when = "mañana" if days == 1 else f"en {days} días"
+        when = (
+            language.reminder_tomorrow if days == 1 else language.reminder_in_days.format(days=days)
+        )
         lines += [
             "BEGIN:VALARM",
             "ACTION:DISPLAY",

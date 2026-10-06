@@ -10,14 +10,15 @@ import httpx
 from pydantic import BaseModel, ValidationError
 
 from app.config import Settings, get_settings
+from app.i18n import DEFAULT_LANG, LANGUAGES, Lang
 from app.models import Document
 from app.schemas import DocumentAnalysis, VoiceAnswer
 
 logger = logging.getLogger(__name__)
 
 PROMPTS_DIR = Path(__file__).resolve().parents[1] / "prompts"
-ANALYZE_PROMPT = "analyze_v1.md"
-QUESTIONS_PROMPT = "questions_v1.md"
+ANALYZE_PROMPT = "analyze_v2.md"
+QUESTIONS_PROMPT = "questions_v2.md"
 MAX_ATTEMPTS = 2  # first try + one retry
 
 # Only these structured fields are shared with the model as document context.
@@ -38,29 +39,34 @@ def load_prompt(name: str) -> str:
     return (PROMPTS_DIR / name).read_text(encoding="utf-8")
 
 
-def unreadable_result() -> DocumentAnalysis:
+def render_prompt(name: str, lang: Lang) -> str:
+    """The prompt with the language fragments filled in; schema and user text come later."""
+    language = LANGUAGES[lang]
+    return (
+        load_prompt(name)
+        .replace("{language_style}", language.style)
+        .replace("{language_note}", language.analysis_note)
+    )
+
+
+def unreadable_result(lang: Lang = DEFAULT_LANG) -> DocumentAnalysis:
     """Returned instead of guessing when the model fails or gives invalid output."""
+    language = LANGUAGES[lang]
     return DocumentAnalysis(
-        document_type="No se pudo leer",
+        document_type=language.unreadable_type,
         issuer=None,
         deadline=None,
         amount_due=None,
-        required_actions=["Tome otra foto con buena luz, con la hoja completa y sin moverse."],
+        required_actions=[language.unreadable_action],
         is_suspicious=False,
         fraud_reason=None,
         confidence="low",
-        explanation=(
-            "No pude leer bien este papel. ¿Me ayuda tomando otra foto? "
-            "Ponga la hoja sobre una mesa, con buena luz y que se vea completa."
-        ),
+        explanation=language.unreadable_explanation,
     )
 
 
-def unanswered_result() -> VoiceAnswer:
-    return VoiceAnswer(
-        answer="Perdón, no pude contestar en este momento. ¿Me lo pregunta otra vez en un ratito?",
-        confidence="low",
-    )
+def unanswered_result(lang: Lang = DEFAULT_LANG) -> VoiceAnswer:
+    return VoiceAnswer(answer=LANGUAGES[lang].unanswered, confidence="low")
 
 
 class OllamaClient:
@@ -110,26 +116,28 @@ class OllamaClient:
                 break
         return fallback
 
-    async def analyze_document(self, image: bytes) -> DocumentAnalysis:
-        prompt = load_prompt(ANALYZE_PROMPT).replace(
+    async def analyze_document(self, image: bytes, lang: Lang = DEFAULT_LANG) -> DocumentAnalysis:
+        prompt = render_prompt(ANALYZE_PROMPT, lang).replace(
             "{schema}", json.dumps(DocumentAnalysis.model_json_schema())
         )
         return await self._structured(
-            DocumentAnalysis, prompt, [image], unreadable_result(), "analyze"
+            DocumentAnalysis, prompt, [image], unreadable_result(lang), "analyze"
         )
 
-    async def answer_question(self, question: str, document: Document | None) -> VoiceAnswer:
+    async def answer_question(
+        self, question: str, document: Document | None, lang: Lang = DEFAULT_LANG
+    ) -> VoiceAnswer:
         context = (
             document.model_dump_json(include=DOCUMENT_CONTEXT_FIELDS)
             if document is not None
             else "none"
         )
         # Fill {document} and {question} last so their text can't inject a {schema} marker.
-        prompt = load_prompt(QUESTIONS_PROMPT).replace(
+        prompt = render_prompt(QUESTIONS_PROMPT, lang).replace(
             "{schema}", json.dumps(VoiceAnswer.model_json_schema())
         )
         prompt = prompt.replace("{document}", context).replace("{question}", question)
-        return await self._structured(VoiceAnswer, prompt, [], unanswered_result(), "question")
+        return await self._structured(VoiceAnswer, prompt, [], unanswered_result(lang), "question")
 
 
 def get_llm() -> OllamaClient:

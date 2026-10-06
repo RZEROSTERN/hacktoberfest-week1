@@ -1,11 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile, status
 from sqlmodel import Session, col, select
 
 from app.calendar import build_reminder
 from app.config import Settings, get_settings
 from app.db import get_session
+from app.i18n import DEFAULT_LANG, LANGUAGES, Lang
 from app.llm import OllamaClient, get_llm
 from app.models import Document
 from app.schemas import DocumentRead
@@ -21,9 +22,10 @@ async def analyze_document(
     settings: Annotated[Settings, Depends(get_settings)],
     llm: Annotated[OllamaClient, Depends(get_llm)],
     session: Annotated[Session, Depends(get_session)],
+    lang: Annotated[Lang, Query()] = DEFAULT_LANG,
 ) -> DocumentRead:
     data = await read_image(image, settings.max_image_bytes)
-    analysis = await llm.analyze_document(data)
+    analysis = await llm.analyze_document(data, lang)
     del data  # the photo is never stored
 
     if analysis.confidence == "low":
@@ -58,12 +60,17 @@ def get_document(
 
 
 @router.get("/{document_id}/reminder.ics")
-def get_reminder(document_id: int, session: Annotated[Session, Depends(get_session)]) -> Response:
+def get_reminder(
+    document_id: int,
+    session: Annotated[Session, Depends(get_session)],
+    lang: Annotated[Lang, Query()] = DEFAULT_LANG,
+) -> Response:
     document = _get_or_404(session, document_id)
     if document.deadline is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Este papel no tiene fecha límite.")
+    filename = LANGUAGES[lang].reminder_filename.format(id=document.id)
     return Response(
-        content=build_reminder(document),
+        content=build_reminder(document, lang),
         media_type="text/calendar; charset=utf-8",
-        headers={"Content-Disposition": f'attachment; filename="recordatorio-{document.id}.ics"'},
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

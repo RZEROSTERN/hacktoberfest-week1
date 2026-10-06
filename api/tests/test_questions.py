@@ -8,6 +8,7 @@ from sqlmodel import Session
 
 from app.config import Settings
 from app.db import get_engine
+from app.i18n import Lang
 from app.llm import OllamaClient, get_llm
 from app.main import app
 from app.models import Document
@@ -21,26 +22,33 @@ AUDIO = b"\x1aE\xdf\xa3" + b"\x00" * 64  # webm header bytes; content is never d
 class FakeTranscriber:
     def __init__(self, text: str | None):
         self.text = text
+        self.langs: list[Lang] = []
 
-    def transcribe(self, audio: bytes) -> str:
+    def transcribe(self, audio: bytes, lang: Lang) -> str:
+        self.langs.append(lang)
         if self.text is None:
             raise TranscriptionError
         return self.text
 
 
 class FakeLLM:
-    def __init__(self) -> None:
+    def __init__(self, transcriber: FakeTranscriber) -> None:
+        self.transcriber = transcriber
         self.calls: list[tuple[str, Document | None]] = []
+        self.langs: list[Lang] = []
 
-    async def answer_question(self, question: str, document: Document | None) -> VoiceAnswer:
+    async def answer_question(
+        self, question: str, document: Document | None, lang: Lang = "es"
+    ) -> VoiceAnswer:
         self.calls.append((question, document))
+        self.langs.append(lang)
         return VoiceAnswer(answer="Debe pagar $2,798.00.", confidence="high")
 
 
 def setup(transcript: str | None) -> FakeLLM:
-    llm = FakeLLM()
+    llm = FakeLLM(FakeTranscriber(transcript))
     app.dependency_overrides[get_llm] = lambda: llm
-    app.dependency_overrides[get_transcriber] = lambda: FakeTranscriber(transcript)
+    app.dependency_overrides[get_transcriber] = lambda: llm.transcriber
     return llm
 
 
@@ -49,9 +57,11 @@ def ask(
     content_type: str = "audio/webm;codecs=opus",
     data: dict[str, str] | None = None,
     headers: dict[str, str] = AUTH,
+    params: dict[str, str] | None = None,
 ) -> httpx.Response:
     response: httpx.Response = client.post(
         "/questions/voice",
+        params=params,
         files={"audio": ("pregunta.webm", AUDIO, content_type)},
         data=data or {},
         headers=headers,
@@ -119,6 +129,27 @@ def test_rejects_oversized_audio(client: TestClient, monkeypatch: pytest.MonkeyP
     monkeypatch.setattr(get_settings(), "max_audio_bytes", 16)
     setup("hola")
     assert ask(client).status_code == 413
+
+
+def test_language_reaches_whisper_and_the_model(client: TestClient) -> None:
+    llm = setup("What is the SAT?")
+    assert ask(client).status_code == 200
+    assert ask(client, params={"lang": "en"}).status_code == 200
+    assert llm.transcriber.langs == ["es", "en"]
+    assert llm.langs == ["es", "en"]
+
+
+def test_silence_answer_follows_the_language(client: TestClient) -> None:
+    setup("")
+    answer = ask(client, params={"lang": "en"}).json()["answer"]
+    assert "say it again" in answer
+    assert "repetir" in ask(client).json()["answer"]
+
+
+def test_unsupported_language_is_rejected(client: TestClient) -> None:
+    llm = setup("hola")
+    assert ask(client, params={"lang": "fr"}).status_code == 422
+    assert llm.calls == []
 
 
 async def test_question_prompt_shares_only_structured_fields() -> None:

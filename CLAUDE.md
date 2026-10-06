@@ -1,12 +1,13 @@
 # Paperwork Translator
 
 Mobile-first PWA for an older, non-technical user: she photographs a document (CFE bill,
-bank letter, SAT notice, summons) or asks by voice, and gets a plain Mexican-Spanish
-explanation: what it is, deadline/amount, steps to take, and a fraud warning. Runtime AI
-is Gemma 4 via Ollama only. Built for the DEV Hacktoberfest Weekend Challenge 2026.
+bank letter, SAT notice, summons) or asks by voice, and gets a plain explanation in Mexican
+Spanish (default) or English, her choice: what it is, deadline/amount, steps to take, and a
+fraud warning. Runtime AI is Gemma 4 via Ollama only. Built for the DEV Hacktoberfest Weekend
+Challenge 2026.
 
 - `api/` FastAPI, Python 3.12, uv, SQLModel/SQLite. Prompts in `api/prompts/`.
-- `web/` Nuxt 4, TypeScript strict, PWA, UI strings in Spanish.
+- `web/` Nuxt 4, TypeScript strict, PWA, UI strings in `web/i18n/locales/{es,en}.json`.
 - `samples/` anonymized test documents (the only documents allowed in tests and demos).
 - `docs/DECISIONS.md` technical decision log.
 
@@ -46,7 +47,8 @@ is Gemma 4 via Ollama only. Built for the DEV Hacktoberfest Weekend Challenge 20
 - No closed-model APIs at runtime (no Claude, OpenAI, Gemini).
 - Images and audio are processed in memory only: never written to disk or logs.
 - Never log document contents or personal data. Secrets only in `.env`.
-- All user-facing text in Spanish (Mexican, warm, simple); everything else in English.
+- All user-facing text exists in Spanish (the default: Mexican, warm, simple, "usted") and
+  English (warm, plain); every key in both files. Everything else (code, logs, docs) in English.
 - The AI explains only: no legal/financial advice, never invents amounts or dates, never
   asks for passwords, PINs, card or ID numbers.
 
@@ -58,4 +60,7 @@ is Gemma 4 via Ollama only. Built for the DEV Hacktoberfest Weekend Challenge 20
 - Gemma 4 thinks by default in Ollama: send `"think": false` (2x faster) and keep the
   explicit deadline rules in the prompt, or it mistakes issue dates for deadlines.
 - PyAV is pinned `<17`: faster-whisper 1.2.1 breaks on newer PyAV (`metadata_errors`).
+- `@nuxtjs/i18n` doesn't set `<html lang>` (`app.vue` does) and loads the other language from
+  `/_i18n/…`, which must stay in the access middleware's public paths. happy-dom reports
+  `en-US`, so `test/setup.ts` pins Spanish before each test.
 - Automated Chrome on macOS hangs on `getUserMedia`; e2e tests stub the mic with Web Audio.
