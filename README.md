@@ -168,7 +168,17 @@ Submissions closed **Mon Oct 5, 2026, 00:59 Mexico City time** (= 06:59 UTC = Su
 
 ### Commits after the deadline
 
-*None yet.*
+Added on Tue Oct 6, 2026, on `feature/i18n`: Spanish and English support.
+
+| Commit | Change |
+|---|---|
+| `3c5ffac` | `feat(api): answer in Spanish or English` |
+| `27c9199` | `feat(web): add Spanish and English with a language switcher` |
+| `1565eb0` | `docs: document Spanish and English support` |
+
+The commit that adds this table (`docs: list commits made after the deadline`) and the merge
+commit of its pull request are also after the deadline; a commit can't contain its own hash,
+so they are only named here.
 
 ## Built with AI assistance
 
